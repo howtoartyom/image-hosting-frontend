@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сервер картинок</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <section id="hero-page" class="hero-page">
+        <div class="hero-content">
+            <h2 class="hero-title">Upload Photos</h2>
+            <p class="hero-subtitle">Upload selfies, memes, or any fun pictures here.</p>
+            <button id="goto-app-button" class="hero-button">TAIL-ENT SHOWCASE</button>
+        </div>
+    </section>
+
+    <section id="main-app-page" class="main-app hidden">
+         <div class="app-container">
+             <header class="app-header">
+                 <nav class="app-nav">
+                    <button data-view="upload" class="app-nav__button active">Upload</button>
+                    <button data-view="images" class="app-nav__button">Images</button>
+                 </nav>
+             </header>
+             <main id="app-views">
+                 <div id="upload-view"></div>
+                 <div id="images-view" class="hidden">
+                     <template id="image-item-template">
+                         <li class="image-item"></li>
+                     </template>
+                 </div>
+             </main>
+         </div>
+    </section>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

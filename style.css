@@ -1,0 +1,95 @@
+:root {
+    --primary-blue: #0d6efd;
+    --dark-bg: #121212;
+    --text-light: #ffffff;
+    --font-family-main: 'Inter', 'Helvetica', 'Arial', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family-main);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.hero-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--dark-bg);
+    background-image: url("assets/images/dog2.png");
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-content {
+    text-align: center;
+    color: var(--text-light);
+    padding: 20px 40px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+}
+
+.hero-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 25px;
+    margin-bottom: 40px;
+    max-width: 400px;
+}
+
+.hero-button {
+    background-color: var(--primary-blue);
+    color: var(--text-light);
+    border: none;
+    padding: 12px 24px;
+    font-size: 25px;
+    font-weight: 500;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.app-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 24px;
+}
+
+.app-header {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 24px;
+}
+
+.app-nav__button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.app-nav__button.active {
+    color: var(--primary-blue);
+    border-bottom-сolor: var(--primary-blue);
+    font-weight: 500;
+}
