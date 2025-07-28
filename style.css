@@ -2,6 +2,11 @@
     --primary-blue: #0d6efd;
     --dark-bg: #121212;
     --text-light: #ffffff;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --bg-light: #f8f9fa;
+    --border-color: #dee2e6;
+    --error-color: #dc3545;
     --font-family-main: 'Inter', 'Helvetica', 'Arial', sans-serif;
 }
 
@@ -25,7 +30,7 @@ body {
     justify-content: center;
     min-height: 100vh;
     background-color: var(--dark-bg);
-    background-image: url("assets/images/dog2.png");
+    transition: background-image 0.5s ease-in-out;
     background-size: cover;
     background-position: center;
 }
@@ -86,10 +91,192 @@ body {
     color: #6c757d;
     border-bottom: 2px solid transparent;
     transition: color 0.2s ease, border-color 0.2s ease;
+    padding: 12px 0;
+    font-size: 18px;
+    border-bottom: 3px solid transparent;
 }
 
 .app-nav__button.active {
     color: var(--primary-blue);
-    border-bottom-сolor: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
     font-weight: 500;
+}
+
+
+/* --- Main App (дополнения) --- */
+.main-app {
+    padding: 40px 20px;
+}
+
+.app-header {
+    margin-bottom: 24px;
+}
+
+.app-title {
+    font-size: 32px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.app-subtitle {
+    font-size: 16px;
+    color: var(--text-muted);
+}
+
+.app-nav {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 32px;
+}
+
+
+/* --- Upload View (новые стили) --- */
+.upload-drop-zone {
+    border: 2px dashed var(--primary-blue);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f0f6ff;
+    transition: background-color 0.2s;
+}
+
+.upload-drop-zone.dragover {
+    background-color: #e0eaff;
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: var(--primary-blue);
+    margin-bottom: 16px;
+}
+
+.upload-drop-zone p {
+    color: var(--text-dark);
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.upload-hint {
+    color: var(--text-muted) !important;
+    font-size: 14px !important;
+}
+
+.upload-error {
+    color: var(--error-color) !important;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.browse-btn {
+    width: 100%;
+    background-color: var(--primary-blue);
+    color: var(--text-light);
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: background-color 0.2s;
+}
+
+.browse-btn:hover {
+    background-color: #133eea;
+}
+
+.current-upload {
+    margin-top: 32px;
+}
+
+.current-upload h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: var(--text-dark);
+}
+
+.url-container {
+    display: flex;
+}
+
+#url-input {
+    flex-grow: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px 0 0 5px;
+    font-size: 16px;
+    background-color: #f8f9fa;
+}
+
+#copy-btn {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+
+/* --- Images View (новые стили) --- */
+.image-list {
+    list-style: none;
+}
+
+.image-item {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1fr;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.image-item:last-child {
+    border-bottom: none;
+}
+
+.image-item__name {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.image-item__name i {
+    color: var(--primary-blue);
+    font-size: 20px;
+}
+
+.image-item__url a {
+    color: var(--text-muted);
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.image-item__url a:hover {
+    text-decoration: underline;
+    color: var(--primary-blue);
+}
+
+.image-item__delete {
+    text-align: right;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.delete-btn:hover {
+    color: var(--error-color);
+    background-color: #fdeeee;
 }
