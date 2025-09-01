@@ -74,16 +74,34 @@ document.addEventListener('DOMContentLoaded', () => {
         function handleFileUpload(file) {
             urlInput.value = '';
             uploadError.classList.add('hidden');
-            setTimeout(() => {
-                if (Math.random() < 0.8) {
-                    const fakeUrl = `https://sharefile.xyz/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                    urlInput.value = fakeUrl;
-                    uploadedImages.push({id: Date.now(), name: file.name, url: fakeUrl});
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    urlInput.value = data.url;
+                    uploadedImages.push({ id: Date.now(), name: file.name, url: data.url });
                     saveImagesToLocalStorage();
+                    if (imagesView.classList.contains('hidden')) {
+                    } else {
+                        renderImages();
+                    }
                 } else {
+                    uploadError.textContent = data.message;
                     uploadError.classList.remove('hidden');
                 }
-            }, 2000);
+            })
+            .catch(error => {
+                console.error('Upload failed:', error);
+                uploadError.textContent = 'Upload failed due to network error.';
+                uploadError.classList.remove('hidden');
+            });
         }
 
         browseBtn.addEventListener('click', () => fileInput.click());
