@@ -1,3 +1,7 @@
+/**
+ * --- ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ ---
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const heroPage = document.getElementById('hero-page');
     const mainAppPage = document.getElementById('main-app-page');

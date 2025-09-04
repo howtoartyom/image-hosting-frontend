@@ -1,3 +1,5 @@
+"""Основной модуль приложения."""
+
 import http.server
 import re
 import logging
@@ -184,6 +186,7 @@ class ImageHostingHandler(http.server.BaseHTTPRequestHandler):
 
 
 def run_server(server_class=http.server.HTTPServer, handler_class=ImageHostingHandler, port=8000):
+    """Запускает сервер."""
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     logging.info(f"Сервер запущен на порту {port}")
