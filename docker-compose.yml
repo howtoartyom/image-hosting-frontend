@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # Проброс порта для прямого доступа к бэкенду (для отладки)
+    volumes:
+      - images:/app/images # Монтируем volume для изображений
+      - logs:/app/logs     # Монтируем volume для логов
+    restart: always # Автоматический перезапуск при сбое
+
+  nginx:
+    image: nginx:latest # Используем официальный образ Nginx
+    ports:
+      - "8080:80" # Nginx будет доступен на порту 8080 хост-машины
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro # Монтируем наш nginx.conf
+      - images:/app/images:ro # Монтируем volume с изображениями в Nginx (только для чтения)
+      - ./static:/app/static:ro # Монтируем статические файлы для Nginx (только для чтения)
+    depends_on:
+      - app # Nginx зависит от сервиса 'app'
+    restart: always
+
+volumes:
+  images: # Определяем volume для изображений
+  logs:   # Определяем volume для логов
