@@ -11,7 +11,7 @@ WORKDIR /app
 
 COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 
-COPY app.py .
+COPY src/ ./
 
 COPY static/ ./static/
 

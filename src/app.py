@@ -8,6 +8,8 @@ import os
 from urllib.parse import urlparse
 import uuid
 
+from database import init_database, test_connection
+
 STATIC_FILES_DIR = 'static'
 UPLOAD_DIR = 'images'
 MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -198,5 +200,29 @@ def run_server(server_class=http.server.HTTPServer, handler_class=ImageHostingHa
     logging.info("Сервер остановлен.")
 
 
+def initialize_app():
+    """Инициализация приложения: проверяет БД и создает таблицу."""
+    logging.info("Инициализация приложения...")
+
+    # 1. Тестируем подключение к БД
+    if test_connection():
+        logging.info("Подключение к базе данных успешно")
+
+        # 2. Инициализируем таблицы
+        if init_database():
+            logging.info("База данных инициализирована и готова")
+        else:
+            logging.error("Ошибка инициализации базы данных: таблица не создана")
+            return False
+    else:
+        logging.error("Не удалось подключиться к базе данных. Проверьте настройки Docker Compose.")
+        return False
+
+    return True
+
+
 if __name__ == '__main__':
-    run_server()
+    if initialize_app():
+        run_server()
+    else:
+        logging.error("Не удалось инициализировать приложение. Сервер не запущен.")

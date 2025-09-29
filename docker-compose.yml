@@ -9,6 +9,25 @@ services:
       - images:/app/images # Монтируем volume для изображений
       - logs:/app/logs     # Монтируем volume для логов
     restart: always # Автоматический перезапуск при сбое
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=images_db
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: images_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
 
   nginx:
     image: nginx:latest # Используем официальный образ Nginx
@@ -25,3 +44,4 @@ services:
 volumes:
   images: # Определяем volume для изображений
   logs:   # Определяем volume для логов
+  db_data: # Определяем volume для данных базы данных
