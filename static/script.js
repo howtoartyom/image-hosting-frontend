@@ -27,12 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     let uploadedImages = [];
 
-    function setRandomHeroImage() {
-        const randomIndex = Math.floor(Math.random() * heroImages.length);
-        const randomImage = heroImages[randomIndex];
-        heroPage.style.backgroundImage = `url(${randomImage})`;
-    }
-
     gotoAppButton.addEventListener(
         'click',
         () => {
@@ -59,21 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     })
 
-    function loadImagesFromLocalStorage() {
-        const storedImages = localStorage.getItem('uploadedImages');
-        if (storedImages) {
-            try {
-                uploadedImages = JSON.parse(storedImages);
-                renderImages();
-            } catch (e) {
-                console.error("Ошибка при парсинге 'uploadedImages' из localStorage:", e);
-                uploadedImages = [];
-            }}}
-
-        function saveImagesToLocalStorage() {
-    localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
-    }
-
         // --- ЛОГИКА UPLOAD ---
         function handleFileUpload(file) {
             urlInput.value = '';
@@ -91,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.status === 'success') {
                     urlInput.value = data.url;
                     uploadedImages.push({ id: Date.now(), name: file.name, url: data.url });
-                    saveImagesToLocalStorage();
                     if (imagesView.classList.contains('hidden')) {
                     } else {
                         renderImages();
@@ -134,33 +112,43 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        function renderImages() {
-            imageList.innerHTML = '';
-            if (uploadedImages.length === 0) {
-                imageList.innerHTML = '<p style="text-align:center; color: var(--text-muted); padding: 20px;">No images uploaded yet.</p>';
-                return;
+        async function renderImages() {
+            try {
+                const response = await fetch('/images-list');
+                const images = await response.json();
+                imageList.innerHTML = '';
+                if (images.length === 0) {
+                    imageList.innerHTML = '<p style="text-align:center;">Нет изображений</p>';
+                    return;
+                }
+
+                images.forEach(image => {
+                    const templateClone = imageItemTemplate.content.cloneNode(true); // Клонирование HTML-шаблона
+                    templateClone.querySelector('.image-item').dataset.id = image.id; // Установка ID в data-атрибут
+                    templateClone.querySelector('.image-item__name span').textContent = image.original_name; // Отображение оригинального имени
+                    const urlLink = templateClone.querySelector('.image-item__url a');
+                    urlLink.href = `/images/${image.filename}`; // Установка ссылки на изображение
+                    urlLink.textContent = `/images/${image.filename}`; // Отображение URL
+                    imageList.appendChild(templateClone); // Добавление элемента в DOM
+                });
+            } catch (e) {
+                console.error('Ошибка загрузки списка:', e); // Обработка ошибок
             }
-            uploadedImages.forEach(image => {
-                const templateClone = imageItemTemplate.content.cloneNode(true);
-                templateClone.querySelector('.image-item').dataset.id = image.id;
-                templateClone.querySelector('.image-item__name span').textContent = image.name;
-                const urlLink = templateClone.querySelector('.image-item__url a');
-                urlLink.href = image.url;
-                urlLink.textContent = image.url;
-                imageList.appendChild(templateClone);
-            });
         }
 
-        imageList.addEventListener('click', (e) => {
-            const deleteButton = e.target.closest('.delete-btn');
-            if (deleteButton) {
-                const listItem = e.target.closest('.image-item');
-                const imageId = parseInt(listItem.dataset.id, 10);
-                uploadedImages = uploadedImages.filter(img => img.id !== imageId);
-                saveImagesToLocalStorage();
-                renderImages();
+        imageList.addEventListener('click', async (e) => {
+                const deleteButton = e.target.closest('.delete-btn');
+                if (deleteButton) {
+                    const listItem = e.target.closest('.image-item');
+                    const imageId = listItem.dataset.id;
+                if (confirm('Удалить изображение?')) {
+                     try {
+                         const response = await fetch(`/delete/${imageId}`, { method: 'DELETE' });
+                        if (response.ok)
+                            renderImages();
+            } catch (e) {
+                console.error('Ошибка удаления:', e); // Обработка ошибок
             }
-        });
-        loadImagesFromLocalStorage();
-        setRandomHeroImage();
-    })
+        }
+    }
+})})

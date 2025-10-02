@@ -8,7 +8,7 @@ import os
 from urllib.parse import urlparse
 import uuid
 
-from database import init_database, test_connection
+from database import init_database, test_connection, get_connection
 
 STATIC_FILES_DIR = 'static'
 UPLOAD_DIR = 'images'
@@ -51,9 +51,44 @@ class ImageHostingHandler(http.server.BaseHTTPRequestHandler):
             return 'application/octet-stream'
 
     def do_GET(self):
-        logging.warning(f"Действие: Неожиданный GET запрос: {self.path}. Возможно, Nginx не настроен корректно или это ошибка клиента.")
-        self._set_headers(404, 'text/plain')
-        self.wfile.write(b"404 Not Found (Handled by Nginx for static files, or unexpected backend request)")
+        parsed_path = urlparse(self.path)
+        if parsed_path.path == '/images-list':
+            try:
+                conn = get_connection()
+                if not conn:
+                    self._set_headers(500, 'application/json')
+                    self.wfile.write(json.dumps({'error': 'DB connection failed'}).encode('utf-8'))
+                    return
+                cursor = conn.cursor()
+                cursor.execute("""
+                SELECT id, filename, original_name, size, upload_time, file_type
+                FROM images
+                ORDER BY upload_time DESC
+                """)
+                rows = cursor.fetchall()
+                cursor.close()
+                conn.close()
+                self._set_headers(200, 'application/json')
+                images_list = []
+                for row in rows:
+                    images_list.append({
+                        'id': row[0],
+                        'filename': row[1],
+                        'original_name': row[2],
+                        'size': row[3],
+                        'upload_time': row[4].isoformat() if row[4] else None,
+                        'file_type': row[5]
+                    })
+                self.wfile.write(json.dumps(images_list).encode('utf-8'))
+                logging.info(f"Получен список изображений: {len(images_list)} записей")
+            except Exception as e:
+                logging.error(f"Ошибка получения списка: {e}")
+                self._set_headers(500, 'application/json')
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+        else:
+            logging.warning(f"Действие: Неожиданный GET запрос: {self.path}. Возможно, Nginx не настроен корректно или это ошибка клиента.")
+            self._set_headers(404, 'text/plain')
+            self.wfile.write(b"404 Not Found (Handled by Nginx for static files, or unexpected backend request)")
 
 
     def do_POST(self):
@@ -163,6 +198,22 @@ class ImageHostingHandler(http.server.BaseHTTPRequestHandler):
                 with open(target_path, 'wb') as f:
                     f.write(file_data)
 
+                try:
+                    conn = get_connection()
+                    if conn:
+                        cursor = conn.cursor()
+                        insert_query = """
+                        INSERT INTO images (filename, original_name, size, file_type)
+                        VALUES (%s, %s, %s, %s)
+                        """
+                        cursor.execute(insert_query, (unique_filename, filename, file_size, file_extension[1:]))
+                        conn.commit()
+                        cursor.close()
+                        conn.close()
+                        logging.info(f"Метаданные сохранены в БД: {unique_filename}")
+                except Exception as e:
+                    logging.error(f"Ошибка сохранения метаданных в БД: {e}")
+
                 file_url = f"/images/{unique_filename}"
                 logging.info(
                     f"Действие: Изображение '{filename}' (сохранено как '{unique_filename}') успешно загружено. Ссылка: {file_url}")
@@ -185,6 +236,37 @@ class ImageHostingHandler(http.server.BaseHTTPRequestHandler):
             logging.warning(f"Действие: Неизвестный POST запрос на: {self.path}")
             self._set_headers(404, 'text/plain')
             self.wfile.write(b"404 Not Found")
+
+    def do_DELETE(self):
+        parsed_path = urlparse(self.path)
+        match = re.match(r'/delete/(\d+)', parsed_path.path)
+        if match:
+            image_id = int(match.group(1))
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT filename FROM images WHERE id = %s", (image_id,))
+                result = cursor.fetchone()
+                if result:
+                    filename = result[0]
+                    file_path = os.path.join(UPLOAD_DIR, filename)
+                    cursor.execute("DELETE FROM images WHERE id = %s", (image_id,))
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        conn.commit()
+
+                    logging.info(f"Изображение {filename} удалено")
+                    self._set_headers(200, 'application/json')
+                    self.wfile.write(json.dumps({'status': 'success'}).encode('utf-8'))
+                else:
+                    self._set_headers(404, 'application/json')
+                    self.wfile.write(json.dumps({'error': 'Не найдено'}).encode('utf-8'))
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                logging.error(f"Ошибка удаления: {e}")
+                self._set_headers(500, 'application/json')
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
 
 
 def run_server(server_class=http.server.HTTPServer, handler_class=ImageHostingHandler, port=8000):
