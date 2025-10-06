@@ -112,27 +112,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        async function renderImages() {
+        let currentPage = 1;
+
+        async function renderImages(page = 1) {
             try {
-                const response = await fetch('/images-list');
-                const images = await response.json();
+                const response = await fetch(`/images-list?page=${page}`);
+                const data = await response.json();
+                console.log(data);
+                console.log(data.pagination);
+                console.log(data.images);
+                console.log(data.images.length);
+
                 imageList.innerHTML = '';
-                if (images.length === 0) {
+                const paginationContainer = document.getElementById('pagination');
+
+                if (data.images.length === 0) {
                     imageList.innerHTML = '<p style="text-align:center;">Нет изображений</p>';
+                    paginationContainer.innerHTML = ''; // Очищаем пагинацию если нет изображений
                     return;
                 }
 
-                images.forEach(image => {
-                    const templateClone = imageItemTemplate.content.cloneNode(true); // Клонирование HTML-шаблона
-                    templateClone.querySelector('.image-item').dataset.id = image.id; // Установка ID в data-атрибут
-                    templateClone.querySelector('.image-item__name span').textContent = image.original_name; // Отображение оригинального имени
+                // Отрисовка изображений
+                data.images.forEach(image => {
+                    const templateClone = imageItemTemplate.content.cloneNode(true);
+                    templateClone.querySelector('.image-item').dataset.id = image.id;
+                    templateClone.querySelector('.image-item__name span').textContent = image.original_name;
                     const urlLink = templateClone.querySelector('.image-item__url a');
-                    urlLink.href = `/images/${image.filename}`; // Установка ссылки на изображение
-                    urlLink.textContent = `/images/${image.filename}`; // Отображение URL
-                    imageList.appendChild(templateClone); // Добавление элемента в DOM
+                    urlLink.href = `/images/${image.filename}`;
+                    urlLink.textContent = `/images/${image.filename}`;
+                    imageList.appendChild(templateClone);
                 });
+
+                // Обновление пагинации
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = `
+                        <button id="prev-page" ${!data.pagination.has_prev ? 'disabled' : ''}>
+                            Предыдущая страница
+                        </button>
+                        <span>Страница ${data.pagination.current_page} из ${data.pagination.total_pages}</span>
+                        <button id="next-page" ${!data.pagination.has_next ? 'disabled' : ''}>
+                            Следующая страница
+                        </button>
+                    `;
+
+                    // Обработчики пагинации
+                    document.getElementById('prev-page')?.addEventListener('click', () => {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            renderImages(currentPage);
+                        }
+                    });
+
+                    document.getElementById('next-page')?.addEventListener('click', () => {
+                        if (data.pagination.has_next) {
+                            currentPage++;
+                            renderImages(currentPage);
+                        }
+                    });
+                }
+
             } catch (e) {
-                console.error('Ошибка загрузки списка:', e); // Обработка ошибок
+                console.error('Ошибка загрузки списка:', e);
+                const paginationContainer = document.getElementById('pagination');
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = ''; // Очищаем пагинацию в случае ошибки
+                }
             }
         }
 
